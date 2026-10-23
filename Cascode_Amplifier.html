@@ -1,0 +1,188 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cascode Amplifier</title>
+<style>
+:root{--p:#0b3d6b;--a:#e07a00;--bg:#f4f7fa;--c:#fff;--t:#1b2733;--g:#2e7d32;--r:#c62828}
+*{box-sizing:border-box}body{margin:0;font:16px/1.6 Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--t)}
+header{background:linear-gradient(135deg,#0b3d6b,#1565a8);color:#fff;padding:28px 5%}
+header h1{margin:4px 0;font-size:clamp(1.5rem,4vw,2.3rem)}header small{opacity:.85}
+nav{position:sticky;top:0;background:#082c4d;display:flex;flex-wrap:wrap;gap:2px;padding:4px 5%;z-index:9}
+nav a{color:#dbe9f7;text-decoration:none;padding:6px 10px;font-size:.9rem;border-radius:4px}nav a:hover{background:var(--a);color:#fff}
+main{max-width:1050px;margin:auto;padding:10px 4%}
+section{background:var(--c);margin:18px 0;padding:18px 22px;border-radius:10px;box-shadow:0 1px 5px #0002}
+h2{color:var(--p);border-bottom:3px solid var(--a);padding-bottom:4px}h3{color:var(--p);margin-bottom:4px}
+table{border-collapse:collapse;width:100%;margin:10px 0;display:block;overflow-x:auto}td,th{border:1px solid #b9c6d3;padding:6px 10px;text-align:left}th{background:#e3edf6}
+.eq{background:#eef5fb;border-left:4px solid var(--p);padding:8px 14px;margin:8px 0;font-family:Cambria,'Times New Roman',serif;font-size:1.1rem;overflow-x:auto}
+.key{background:#fff4e0;border-left:4px solid var(--a);padding:8px 14px;margin:8px 0}
+svg{max-width:100%;height:auto}figure{margin:10px 0;text-align:center}figcaption{font-size:.9rem;color:#555}
+.q{border:1px solid #d3dce5;border-radius:8px;padding:10px 14px;margin:10px 0}.q label{display:block;padding:2px 0;cursor:pointer}
+.q.ok{border-color:var(--g);background:#eaf6eb}.q.bad{border-color:var(--r);background:#fdeceb}.q.na{border-color:var(--a);background:#fff6e6}
+.ex{margin-top:6px;font-size:.95rem}.sc{font-weight:700;font-size:1.1rem;margin:8px 0}
+.tag{font-size:.75rem;padding:1px 7px;border-radius:9px;color:#fff}.Easy{background:var(--g)}.Moderate{background:var(--a)}.Difficult{background:var(--r)}
+button{background:var(--p);color:#fff;border:0;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:.95rem}button:hover{background:var(--a)}
+details{border:1px solid #d3dce5;border-radius:6px;padding:6px 12px;margin:6px 0}summary{cursor:pointer;font-weight:600}
+input[type=number]{width:80px;padding:4px}.calc label{margin-right:12px;display:inline-block}
+footer{text-align:center;padding:20px;font-size:.85rem;color:#666}
+@media print{nav,button,.calc{display:none}section{box-shadow:none;break-inside:avoid}header{background:#fff;color:#000}}
+</style></head><body>
+<header><small>Analog Electronics &nbsp;|&nbsp; Unit: Amplifier Configurations and Frequency Response (MOSFET)</small>
+<h1>Cascode Amplifier</h1>
+<div><b>Learning objectives:</b> identify the CS–CG stack · derive R<sub>out</sub>, G<sub>m</sub> and A<sub>v</sub> · explain the reduced Miller effect · compute headroom · solve GATE and interview problems.</div></header>
+<nav><a href="#intro">Intro</a><a href="#circuit">Circuit</a><a href="#working">Working</a><a href="#sim">Waveforms</a><a href="#math">Equations</a><a href="#solved">Solved Problems</a><a href="#gate">GATE</a><a href="#interview">Interview</a><a href="#apps">Applications</a><a href="#quiz">Quiz</a><a href="#revision">Revision</a></nav>
+<main>
+
+<section id="intro"><h2>1. Introduction</h2>
+<p>A <b>cascode amplifier</b> stacks a <b>common-source (CS)</b> transistor M1 and a <b>common-gate (CG)</b> transistor M2. The input drives the gate of M1; M2 has a fixed DC bias on its gate and carries M1's drain current to the output. M2 acts as a "shield": it holds M1's drain voltage nearly constant.</p>
+<p><b>Operating principle:</b> M1 converts the input voltage into a current (g<sub>m1</sub>v<sub>in</sub>). M2 passes that current almost unchanged to the load, but raises the output resistance to about g<sub>m2</sub>r<sub>o2</sub>r<sub>o1</sub> and keeps the voltage swing across M1's gate–drain capacitance small.</p>
+<p><b>Importance:</b> high gain, high output resistance and wide bandwidth in one stage: used in op-amp input/gain stages, current mirrors, RF low-noise amplifiers and high-speed front ends.</p>
+<div class="key"><b>Prerequisites:</b> MOSFET saturation and small-signal model (g<sub>m</sub>, r<sub>o</sub>, g<sub>mb</sub>), CS and CG amplifiers, Miller effect, DC biasing.</div>
+<table><tr><th>Term</th><th>Meaning</th></tr>
+<tr><td>g<sub>m</sub></td><td>Transconductance, ∂I<sub>D</sub>/∂V<sub>GS</sub> (S)</td></tr>
+<tr><td>r<sub>o</sub></td><td>Output resistance ≈ 1/(λI<sub>D</sub>) (Ω)</td></tr>
+<tr><td>Intrinsic gain</td><td>g<sub>m</sub>r<sub>o</sub> (dimensionless)</td></tr>
+<tr><td>V<sub>ov</sub></td><td>Overdrive voltage V<sub>GS</sub> − V<sub>th</sub></td></tr>
+<tr><td>Miller effect</td><td>C<sub>gd</sub> appears at the input as C<sub>gd</sub>(1 + |A|)</td></tr></table>
+<p><b>Types:</b> telescopic cascode, folded cascode, regulated (gain-boosted) cascode, BJT cascode, and cascode current mirror.</p></section>
+
+<section id="circuit"><h2>2. Circuit Diagram</h2>
+<figure><svg viewBox="0 0 520 350" width="620" font-family="Arial" font-size="13" stroke="#111" fill="none" stroke-width="1.8">
+<defs><g id="gnd"><path d="M0,0V8M-9,8H9M-6,12H6M-3,16H3"/></g></defs>
+<text x="285" y="18" fill="#111" stroke="none">+VDD</text><path d="M300,25V50M300,90V145"/><rect x="292" y="50" width="16" height="40"/><text x="318" y="75" fill="#111" stroke="none">R<tspan font-size="10" dy="3">D</tspan></text>
+<path d="M300,120H460"/><circle cx="300" cy="120" r="3" fill="#111"/><text x="420" y="112" fill="#111" stroke="none">Vout</text>
+<path d="M265,150V190M275,140V200M275,145H300M275,195H300M265,170H180V175"/><circle cx="180" cy="190" r="15"/><path d="M180,205V220"/><use href="#gnd" x="180" y="220"/><text x="120" y="193" fill="#111" stroke="none">VB (DC)</text>
+<text x="320" y="175" fill="#111" stroke="none">M2 (common-gate)</text>
+<path d="M300,195V255"/><circle cx="300" cy="225" r="3" fill="#111"/><text x="310" y="228" fill="#111" stroke="none">node X</text>
+<path d="M265,260V300M275,250V310M275,255H300M275,305H300M300,305V320M265,280H70V285"/><use href="#gnd" x="300" y="320"/>
+<text x="320" y="285" fill="#111" stroke="none">M1 (common-source)</text>
+<circle cx="70" cy="300" r="15"/><path d="M70,315V320"/><use href="#gnd" x="70" y="320"/><text x="20" y="270" fill="#111" stroke="none">Vin (+ DC bias VG1)</text></svg>
+<figcaption>Fig. 1 – NMOS cascode amplifier with resistive load R<sub>D</sub> (schematic redrawn; no component values assigned).</figcaption></figure>
+<table><tr><th>Component</th><th>Function</th></tr>
+<tr><td>M1</td><td>CS transistor: converts v<sub>in</sub> to current g<sub>m1</sub>v<sub>in</sub></td></tr>
+<tr><td>M2</td><td>CG transistor: passes current to the output, boosts R<sub>out</sub>, shields M1</td></tr>
+<tr><td>V<sub>B</sub></td><td>DC gate bias of M2 (an AC ground); keeps both devices in saturation</td></tr>
+<tr><td>R<sub>D</sub></td><td>Load; may be replaced by a current source (PMOS) for much higher gain</td></tr>
+<tr><td>V<sub>DD</sub></td><td>Supply; sets the allowed output swing</td></tr></table></section>
+
+<section id="working"><h2>3. Working Principle</h2>
+<ol><li><b>DC:</b> choose V<sub>G1</sub> to set I<sub>D</sub>. Choose V<sub>B</sub> so that V<sub>X</sub> = V<sub>B</sub> − V<sub>GS2</sub> ≥ V<sub>ov1</sub> (M1 saturated) and V<sub>out</sub> ≥ V<sub>B</sub> − V<sub>th</sub> (M2 saturated).</li>
+<li><b>AC signal flow:</b> v<sub>in</sub> → M1 (g<sub>m1</sub>v<sub>in</sub>) → node X → source of M2 (low impedance ≈ 1/g<sub>m2</sub>) → drain of M2 → load. Output is 180° out of phase with the input.</li>
+<li><b>Shielding:</b> output changes appear at node X reduced by roughly g<sub>m2</sub>r<sub>o2</sub>, so M1's current barely changes: the output resistance rises.</li>
+<li><b>Assumptions:</b> both devices in saturation, small-signal linear model, λ-model for r<sub>o</sub>, body effect neglected unless stated.</li></ol>
+<p><b>Advantages:</b> very high R<sub>out</sub>/gain, small Miller capacitance (wider bandwidth), better input–output isolation. <b>Limitations:</b> lost voltage headroom (V<sub>ov1</sub> + V<sub>ov2</sub> minimum at the output), a more complex bias, and an extra pole at node X.</p>
+<div class="key"><b>Misconceptions:</b> (1) The cascode does <i>not</i> raise g<sub>m</sub>: G<sub>m</sub> ≈ g<sub>m1</sub>. (2) With a small resistive R<sub>D</sub>, the gain is almost the same as a CS stage (the gain benefit needs a high-impedance load). (3) M2's gate is a DC bias, not a signal input.</div></section>
+
+<section id="sim"><h2>4. Waveforms (illustrative)</h2>
+<p>No simulation screenshot was supplied, so the plots below are <b>illustrative</b> models, not simulation results.</p>
+<div class="calc">v<sub>in</sub> amp <input type="number" id="va" value="10"> mV &nbsp; A<sub>v</sub> <input type="number" id="av" value="-20"> <button onclick="plots()">Plot</button></div>
+<svg id="w1" viewBox="0 0 600 200" width="620" style="background:#fafcff;border:1px solid #ccc"></svg>
+<p style="font-size:.85rem" id="wc"></p>
+<p><b>Frequency response (illustrative):</b> g<sub>m</sub> = 4 mS, R<sub>D</sub> = 5 kΩ, source resistance 10 kΩ, C<sub>gs</sub> = 100 fF, C<sub>gd</sub> = 20 fF, output pole ignored. Both have the same mid-band gain (−20 = 26 dB); the CS input pole is at ≈ 30.6 MHz, the cascode input pole at ≈ 114 MHz.</p>
+<svg id="w2" viewBox="0 0 600 230" width="620" style="background:#fafcff;border:1px solid #ccc"></svg></section>
+
+<section id="math"><h2>5. Equations and Derivations</h2>
+<p><b>Output resistance:</b> short v<sub>in</sub>, apply v<sub>x</sub> at the output. M1 current i<sub>x</sub> flows through r<sub>o1</sub>, so V<sub>X</sub> = i<sub>x</sub>r<sub>o1</sub>. M2: v<sub>gs2</sub> = −V<sub>X</sub>, so i<sub>x</sub> = −g<sub>m2</sub>V<sub>X</sub> + (v<sub>x</sub> − V<sub>X</sub>)/r<sub>o2</sub>. Substitute and solve:</p>
+<div class="eq">R<sub>out</sub> = r<sub>o1</sub> + r<sub>o2</sub> + g<sub>m2</sub>r<sub>o1</sub>r<sub>o2</sub> ≈ g<sub>m2</sub>r<sub>o2</sub>r<sub>o1</sub> &nbsp;(Ω; with body effect g<sub>m2</sub> → g<sub>m2</sub> + g<sub>mb2</sub>)</div>
+<p><b>Transconductance:</b> G<sub>m</sub> = i<sub>out(short)</sub>/v<sub>in</sub> ≈ g<sub>m1</sub>.</p>
+<div class="eq">A<sub>v</sub> = −G<sub>m</sub>(R<sub>out</sub> ∥ R<sub>D</sub>) ≈ −g<sub>m1</sub>[(g<sub>m2</sub>r<sub>o2</sub>r<sub>o1</sub>) ∥ R<sub>D</sub>]</div>
+<p><b>Limiting cases:</b> R<sub>D</sub> ≪ R<sub>out</sub> → A<sub>v</sub> ≈ −g<sub>m1</sub>R<sub>D</sub>. Ideal current-source load → A<sub>v</sub> ≈ −g<sub>m1</sub>g<sub>m2</sub>r<sub>o1</sub>r<sub>o2</sub> ≈ −(g<sub>m</sub>r<sub>o</sub>)² for identical devices. CS stage for comparison: A<sub>v</sub> = −g<sub>m</sub>(r<sub>o</sub> ∥ R<sub>D</sub>).</p>
+<p><b>Miller effect:</b> resistance looking into the source of M2 ≈ 1/g<sub>m2</sub> (large r<sub>o2</sub>, load), so the gain of M1 is ≈ −g<sub>m1</sub>/g<sub>m2</sub> (= −1 if identical):</p>
+<div class="eq">C<sub>Miller,cascode</sub> ≈ C<sub>gd1</sub>(1 + g<sub>m1</sub>/g<sub>m2</sub>) ≈ 2C<sub>gd1</sub> &nbsp; vs &nbsp; C<sub>gd</sub>(1 + g<sub>m</sub>R<sub>D</sub>) for CS</div>
+<p><b>Headroom:</b> V<sub>out,min</sub> = V<sub>ov1</sub> + V<sub>ov2</sub> (with V<sub>B</sub> = V<sub>ov1</sub> + V<sub>GS2</sub>). <b>Gain in dB:</b> 20 log<sub>10</sub>|A<sub>v</sub>|. <b>Power:</b> P = V<sub>DD</sub>I<sub>D</sub>.</p>
+<h3>Calculator (0 for R<sub>D</sub> = ideal current source)</h3>
+<div class="calc"><label>g<sub>m1</sub> <input type="number" id="g1" value="2"></label><label>g<sub>m2</sub> <input type="number" id="g2" value="2"></label> mS<br><label>r<sub>o1</sub> <input type="number" id="o1" value="50"></label><label>r<sub>o2</sub> <input type="number" id="o2" value="50"></label><label>R<sub>D</sub> <input type="number" id="rd" value="10"></label> kΩ <button onclick="calc()">Compute</button><div class="sc" id="cr"></div></div></section>
+
+<section id="solved"><h2>6. Solved Numerical Problems</h2>
+<details open><summary>Problem 1 (Easy) – output resistance and ideal-load gain</summary>
+<p>g<sub>m1</sub> = g<sub>m2</sub> = 2 mS, r<sub>o1</sub> = r<sub>o2</sub> = 50 kΩ (no body effect). Find R<sub>out</sub> and A<sub>v</sub> with an ideal current-source load.<br>R<sub>out</sub> = 50k + 50k + (2 mS)(50k)(50k) = 100 kΩ + 5 MΩ = <b>5.1 MΩ</b> (a CS stage: only 50 kΩ).<br>A<sub>v</sub> = −g<sub>m1</sub>R<sub>out</sub> = −(2×10<sup>−3</sup>)(5.1×10<sup>6</sup>) = <b>−10,200</b> ≈ 80.2 dB. Interpretation: ≈ 100× the CS output resistance.</p></details>
+<details><summary>Problem 2 (Moderate) – with a resistive load</summary>
+<p>Same transistors, R<sub>D</sub> = 10 kΩ.<br>R<sub>tot</sub> = 5.1 MΩ ∥ 10 kΩ ≈ 9.98 kΩ → A<sub>v</sub> = −(2 mS)(9.98 kΩ) ≈ <b>−19.96</b>. CS: −2 mS × (50k ∥ 10k = 8.33 kΩ) = −16.7. Interpretation: cascode gives only about 20 % more gain here; its value shows with high-impedance loads.</p></details>
+<details><summary>Problem 3 (GATE-style, Difficult) – Miller capacitance</summary>
+<p>g<sub>m1</sub> = g<sub>m2</sub> = 4 mS, R<sub>D</sub> = 5 kΩ, C<sub>gd1</sub> = 20 fF, r<sub>o</sub> large. Compare the Miller capacitance at M1's gate in a CS stage and a cascode.<br>CS: A = −g<sub>m</sub>R<sub>D</sub> = −20 → C<sub>M</sub> = 20 fF × 21 = <b>420 fF</b>.<br>Cascode: gain of M1 ≈ −g<sub>m1</sub>/g<sub>m2</sub> = −1 → C<sub>M</sub> = 20 fF × 2 = <b>40 fF</b>. Ratio ≈ 10.5. <i>Shortcut:</i> cascode Miller factor ≈ 2 irrespective of the overall gain.</p></details></section>
+
+<section id="gate"><h2>7. GATE Preparation</h2>
+<p>These are <b>original practice questions</b>, not previous-year GATE questions.</p>
+<div id="gq"></div><h3>Answer key with solutions</h3><div id="gk"></div></section>
+
+<section id="interview"><h2>8. Core Electronics Interview Preparation</h2>
+<p><b>Industry perspective:</b> cascodes appear in op-amp gain stages and current mirrors, RF LNAs and optical-receiver front ends. Interviews for analog design, validation and test roles focus on R<sub>out</sub>, headroom, bias and why gain collapses when a device leaves saturation.</p><div id="iv"></div></section>
+
+<section id="apps"><h2>9. Applications and Industry Relevance</h2>
+<table><tr><th>Application</th><th>Role of the cascode</th></tr>
+<tr><td>Telescopic and folded-cascode op-amps / OTAs</td><td>High DC gain in a single stage; common in ADC and filter circuits</td></tr>
+<tr><td>Cascode current mirrors, bias generators</td><td>High R<sub>out</sub> → accurate, supply-independent currents</td></tr>
+<tr><td>RF low-noise amplifiers (LNAs)</td><td>Better reverse isolation, lower Miller capacitance, higher bandwidth</td></tr>
+<tr><td>Optical receivers / transimpedance front ends</td><td>Isolates the photodiode capacitance from the gain node</td></tr>
+<tr><td>Analog cells in mixed-signal ICs</td><td>Gain without extra stages, so less compensation</td></tr></table>
+<p><b>Design considerations:</b> headroom at low V<sub>DD</sub>, bias of V<sub>B</sub> across PVT, device matching, extra pole at node X, noise from M2 (small). <b>Test challenges:</b> M1 slipping into triode over process or temperature corners; output swing limits. <b>Roles:</b> analog IC design, RF design, layout/validation, characterization engineer.</p></section>
+
+<section id="quiz"><h2>10. Topic Quiz (10 questions)</h2><div id="tq"></div></section>
+
+<section id="revision"><h2>11. Revision Materials</h2>
+<div class="key"><b>Formula sheet:</b> R<sub>out</sub> ≈ g<sub>m2</sub>r<sub>o2</sub>r<sub>o1</sub>; G<sub>m</sub> ≈ g<sub>m1</sub>; A<sub>v</sub> = −G<sub>m</sub>(R<sub>out</sub> ∥ R<sub>D</sub>); ideal-load A<sub>v</sub> ≈ −(g<sub>m</sub>r<sub>o</sub>)²; V<sub>out,min</sub> = V<sub>ov1</sub> + V<sub>ov2</sub>; Miller factor ≈ 2.</div>
+<table><tr><th>Feature</th><th>CS</th><th>Cascode</th></tr>
+<tr><td>R<sub>out</sub></td><td>r<sub>o</sub></td><td>≈ g<sub>m</sub>r<sub>o</sub>² </td></tr>
+<tr><td>Gain, ideal load</td><td>−g<sub>m</sub>r<sub>o</sub></td><td>≈ −(g<sub>m</sub>r<sub>o</sub>)²</td></tr>
+<tr><td>Gain, small R<sub>D</sub></td><td>−g<sub>m</sub>R<sub>D</sub></td><td>≈ −g<sub>m</sub>R<sub>D</sub></td></tr>
+<tr><td>Miller multiplication</td><td>1 + g<sub>m</sub>R<sub>D</sub></td><td>≈ 2</td></tr>
+<tr><td>Headroom</td><td>V<sub>ov</sub></td><td>2 V<sub>ov</sub></td></tr></table>
+<ul><li><b>Troubleshooting:</b> low gain → M1 or M2 in triode (check V<sub>B</sub>); output stuck low → V<sub>X</sub> below V<sub>ov1</sub>; bandwidth poor → load capacitance or node X capacitance.</li>
+<li><b>Memory aid:</b> "CS makes the current, CG carries it and lifts R<sub>out</sub>."</li>
+<li><b>High-priority GATE points:</b> R<sub>out</sub> formula, G<sub>m</sub> ≈ g<sub>m1</sub>, Miller factor ≈ 2, headroom cost, gain with resistive vs. ideal load.</li></ul></section>
+</main><footer>Waveforms and the diagram are illustrative models generated for this page.</footer>
+<script>
+const G=[
+{d:'Easy',q:'A cascode amplifier is a',o:['CS stage stacked with a CG stage','CD stage followed by CS','CE followed by CC','CG followed by CD'],a:0,e:'M1 is common-source (input), M2 is common-gate (output).'},
+{d:'Easy',q:'The main benefit of a cascode over a single CS stage (with a high-impedance load) is',o:['Lower supply voltage','Higher output resistance and lower Miller effect','Higher g<sub>m</sub>','Lower power'],a:1,e:'R<sub>out</sub> ≈ g<sub>m2</sub>r<sub>o2</sub>r<sub>o1</sub>; Miller factor ≈ 2. Headroom actually worsens.'},
+{d:'Moderate',q:'g<sub>m1</sub> = g<sub>m2</sub> = 1 mS, r<sub>o1</sub> = r<sub>o2</sub> = 100 kΩ. R<sub>out</sub> ≈',o:['100 kΩ','1 MΩ','10.2 MΩ','200 kΩ'],a:2,e:'100k + 100k + (1m)(100k)(100k) = 200 kΩ + 10 MΩ = 10.2 MΩ.'},
+{d:'Moderate',q:'With identical devices, the gain from M1\'s gate to its drain (node X) is about',o:['−1','−g<sub>m</sub>r<sub>o</sub>','−g<sub>m</sub>R<sub>D</sub>','+1'],a:0,e:'Resistance seen at M2\'s source ≈ 1/g<sub>m2</sub>, so gain ≈ −g<sub>m1</sub>/g<sub>m2</sub> = −1.'},
+{d:'Moderate',q:'V<sub>ov1</sub> = V<sub>ov2</sub> = 0.2 V. The minimum output voltage that keeps both devices saturated is',o:['0.2 V','0.4 V','0.6 V','0.8 V'],a:1,e:'V<sub>out,min</sub> = V<sub>ov1</sub> + V<sub>ov2</sub> = 0.4 V.'},
+{d:'Moderate',q:'g<sub>m</sub> = 2 mS, r<sub>o</sub> = 50 kΩ for both devices, ideal current-source load. |A<sub>v</sub>| ≈',o:['100','10,000','200','20'],a:1,e:'≈ (g<sub>m</sub>r<sub>o</sub>)² = 100² = 10⁴ (exact 10,200).'},
+{d:'Moderate',q:'g<sub>m1</sub> = 4 mS, R<sub>D</sub> = 5 kΩ, r<sub>o</sub> = 100 kΩ (each). A<sub>v</sub> of the cascode is about',o:['−20','−200','−2000','−0.2'],a:0,e:'R<sub>out</sub> ≈ 40 MΩ ≫ R<sub>D</sub>, so A<sub>v</sub> ≈ −g<sub>m1</sub>R<sub>D</sub> = −20. The huge R<sub>out</sub> does not help with a small R<sub>D</sub>.'},
+{d:'Difficult',q:'Which statement is true when a cascode replaces a CS stage?',o:['G<sub>m</sub> increases by g<sub>m2</sub>r<sub>o2</sub>','R<sub>out</sub> rises and the output swing shrinks','Input capacitance grows','The output phase becomes 0°'],a:1,e:'G<sub>m</sub> stays ≈ g<sub>m1</sub>, input capacitance falls, and the phase is still 180°.'},
+{d:'Difficult',q:'Including the body effect of M2 (g<sub>mb2</sub> = 0.2 g<sub>m2</sub>), R<sub>out</sub> will',o:['Decrease by 20 %','Increase by about 20 %','Be unchanged','Become infinite'],a:1,e:'R<sub>out</sub> ≈ (g<sub>m2</sub> + g<sub>mb2</sub>)r<sub>o1</sub>r<sub>o2</sub> = 1.2 × g<sub>m2</sub>r<sub>o1</sub>r<sub>o2</sub>.'},
+{d:'Difficult',q:'g<sub>m</sub> = 4 mS, R<sub>D</sub> = 5 kΩ, C<sub>gd1</sub> = 20 fF. C<sub>Miller</sub>(CS)/C<sub>Miller</sub>(cascode) ≈',o:['10.5','2','21','1'],a:0,e:'CS: 20(1+20) = 420 fF. Cascode: 20(1+1) = 40 fF. 420/40 = 10.5.'}];
+const T=[
+{q:'The input signal in a cascode is applied to the gate of',o:['M1','M2','Both','VDD'],a:0,e:'M1 is the CS device.'},
+{q:'The gate of M2 is connected to',o:['Input','A DC bias (AC ground)','Output','VDD through R<sub>D</sub>'],a:1,e:'M2 is common-gate: its gate is at a fixed DC bias.'},
+{q:'The role of M2 is',o:['CS amplifier','Common-gate current buffer','Source follower','Active load only'],a:1,e:'It carries M1\'s current to the output and shields M1.'},
+{q:'R<sub>out</sub> of the cascode is approximately',o:['r<sub>o</sub>','g<sub>m</sub>r<sub>o</sub>','g<sub>m2</sub>r<sub>o2</sub>r<sub>o1</sub>','1/g<sub>m</sub>'],a:2,e:'Derived from the small-signal model.'},
+{q:'The main cost of the cascode is',o:['Lower gain','Reduced voltage headroom','Lower bandwidth','Higher input resistance'],a:1,e:'The stack needs V<sub>ov1</sub> + V<sub>ov2</sub> at the output minimum.'},
+{q:'The short-circuit transconductance G<sub>m</sub> is about',o:['g<sub>m1</sub>','g<sub>m2</sub>r<sub>o2</sub>','g<sub>m1</sub>g<sub>m2</sub>','0'],a:0,e:'M2 passes M1\'s current unchanged.'},
+{q:'Cascode current mirrors are used because they',o:['Need less headroom','Give higher output resistance and better current accuracy','Remove the need for bias','Double the current'],a:1,e:'High R<sub>out</sub> reduces current error from V<sub>DS</sub> variation.'},
+{q:'The Miller effect is reduced because',o:['C<sub>gd</sub> is removed','M1 has a gain of only ≈ −1','M2 is a PMOS','g<sub>m</sub> is lower'],a:1,e:'M1\'s drain sees ≈ 1/g<sub>m2</sub>, so the voltage gain across C<sub>gd1</sub> is small.'},
+{q:'Resistance looking into M2\'s source (large r<sub>o</sub>, large load) is about',o:['1/g<sub>m2</sub>','r<sub>o2</sub>','∞','g<sub>m2</sub>'],a:0,e:'Common-gate input resistance ≈ 1/g<sub>m</sub>.'},
+{q:'A folded cascode is preferred when',o:['More input common-mode range / headroom is needed','Gain must be lower','No bias is wanted','The supply is high'],a:0,e:'Folding the signal path (opposite-type device) improves input common-mode range at some cost in power and noise.'}];
+const I=[
+['What is a cascode and why use it?','A CS transistor with a CG transistor stacked on top. It raises R<sub>out</sub> to ≈ g<sub>m</sub>r<sub>o</sub>², reduces Miller capacitance and isolates the output from the input.'],
+['Derive R<sub>out</sub>.','Apply v<sub>x</sub>, V<sub>X</sub> = i<sub>x</sub>r<sub>o1</sub>, v<sub>gs2</sub> = −V<sub>X</sub>, so i<sub>x</sub> = −g<sub>m2</sub>V<sub>X</sub> + (v<sub>x</sub> − V<sub>X</sub>)/r<sub>o2</sub>. Result: r<sub>o1</sub> + r<sub>o2</sub> + g<sub>m2</sub>r<sub>o1</sub>r<sub>o2</sub>.'],
+['Why is the gain not much higher with a resistive load?','A<sub>v</sub> = −G<sub>m</sub>(R<sub>out</sub> ∥ R<sub>D</sub>) ≈ −g<sub>m</sub>R<sub>D</sub> when R<sub>D</sub> ≪ R<sub>out</sub>. The benefit needs a high-impedance load such as a PMOS current source or cascode load.'],
+['How do you choose V<sub>B</sub>?','V<sub>B</sub> ≥ V<sub>ov1</sub> + V<sub>GS2</sub> so M1 stays saturated. Larger V<sub>B</sub> eats output swing. Typical design: just enough margin across PVT corners.'],
+['Why does the cascode reduce Miller effect?','M1 drives the low impedance 1/g<sub>m2</sub>, so its voltage gain is ≈ −1 and C<sub>gd1</sub> is multiplied by ≈ 2, instead of 1 + g<sub>m</sub>R<sub>D</sub>.'],
+['Gain measured in simulation is much lower than expected. Debug.','Check that M1 and M2 are both in saturation (V<sub>B</sub>, V<sub>out</sub>); check the bias current and λ in the model; body effect; load resistance; whether the output is near a rail.'],
+['Telescopic vs. folded cascode?','Telescopic: stacked, best gain/speed/power but limited swing and input common-mode range. Folded: more input common-mode range and swing, but more current and noise.'],
+['What is the effect of a cascode in a current mirror?','Higher R<sub>out</sub>, so the copy current barely changes with V<sub>DS</sub>. Cost: extra V<sub>th</sub> + V<sub>ov</sub> of headroom unless a wide-swing structure is used.'],
+['BJT cascode: what limits R<sub>out</sub>?','Finite β: R<sub>out</sub> is limited to roughly β·r<sub>o</sub> (not g<sub>m</sub>r<sub>o</sub>²) because of r<sub>π2</sub> at the stacked emitter.'],
+['What is a regulated (gain-boosted) cascode?','An auxiliary amplifier senses node X and drives M2\'s gate, multiplying R<sub>out</sub> by roughly the booster\'s gain, at the cost of power and extra poles/zeros.'],
+['Follow-up: what is the extra pole in a cascode?','Node X (M1 drain / M2 source) has a small capacitance and resistance 1/g<sub>m2</sub>, giving a pole near g<sub>m2</sub>/C<sub>X</sub>, usually much above the dominant pole.']];
+function mk(id,D){window[id+'D']=D;document.getElementById(id).innerHTML=D.map((d,i)=>`<div class="q" id="${id}q${i}"><b>Q${i+1}.</b>${d.d?` <span class="tag ${d.d}">${d.d}</span>`:''} ${d.q}${d.o.map((o,j)=>`<label><input type="radio" name="${id}${i}" value="${j}"> ${'ABCD'[j]}. ${o}</label>`).join('')}<div class="ex" hidden></div></div>`).join('')+`<button onclick="chk('${id}')">Check Answers</button> <button onclick="rst('${id}')">Reset Quiz</button><div class="sc" id="${id}s"></div>`}
+function chk(id){const D=window[id+'D'];let s=0,u=0;D.forEach((d,i)=>{const el=document.getElementById(id+'q'+i),x=document.querySelector(`input[name="${id}${i}"]:checked`),ex=el.querySelector('.ex');let m;
+if(!x){u++;el.className='q na';m='⚠ Unanswered. '}else if(+x.value==d.a){s++;el.className='q ok';m='✔ Correct. '}else{el.className='q bad';m='✘ Incorrect. '}
+ex.hidden=false;ex.innerHTML=m+'Correct answer: <b>'+'ABCD'[d.a]+'</b>. '+d.e});
+document.getElementById(id+'s').textContent=`Score: ${s}/${D.length} (${Math.round(100*s/D.length)}%) · Unanswered: ${u}`}
+function rst(id){document.querySelectorAll(`#${id} input`).forEach(x=>x.checked=false);document.querySelectorAll(`#${id} .q`).forEach(q=>{q.className='q';q.querySelector('.ex').hidden=true});document.getElementById(id+'s').textContent=''}
+mk('gq',G);mk('tq',T);
+document.getElementById('gk').innerHTML=G.map((d,i)=>`<details><summary>Q${i+1} (${d.d}) – Answer ${'ABCD'[d.a]}</summary>${d.q}<br><b>${d.o[d.a]}</b>. ${d.e}</details>`).join('');
+document.getElementById('iv').innerHTML=I.map((x,i)=>`<details><summary>Q${i+1}. ${x[0]}</summary><p>${x[1]}</p></details>`).join('');
+function calc(){const g=id=>+document.getElementById(id).value,g1=g('g1'),g2=g('g2'),o1=g('o1'),o2=g('o2'),rd=g('rd');
+const ro=o1+o2+g2*o1*o2,rt=rd>0?ro*rd/(ro+rd):ro,av=-g1*rt,cs=-g1*(rd>0?o1*rd/(o1+rd):o1);
+document.getElementById('cr').innerHTML=`R<sub>out</sub> = ${ro.toFixed(1)} kΩ · A<sub>v</sub> (cascode) = ${av.toFixed(1)} (${(20*Math.log10(Math.abs(av))).toFixed(1)} dB) · A<sub>v</sub> (CS) = ${cs.toFixed(1)}`}
+function plots(){const A=+document.getElementById('va').value,av=+document.getElementById('av').value,N=300;let a='',b='';
+for(let i=0;i<=N;i++){const t=i/N*4*Math.PI,x=20+i*1.9;a+=`${x},${100-Math.sin(t)*80} `;b+=`${x},${100+Math.sign(av||1)*Math.sin(t)*80} `}
+document.getElementById('w1').innerHTML=`<line x1="20" y1="100" x2="590" y2="100" stroke="#999"/><polyline fill="none" stroke="#1565c0" stroke-width="2" points="${a}"/><polyline fill="none" stroke="#c62828" stroke-width="2" points="${b}"/><text x="25" y="15" fill="#1565c0" font-size="12">vin (blue)</text><text x="120" y="15" fill="#c62828" font-size="12">vout (red)</text>`;
+document.getElementById('wc').textContent=`Peaks normalised for display: vin = ${A} mV, vout = ${(Math.abs(av)*A).toFixed(1)} mV, phase ${av<0?'180° (inverting)':'0°'}. Illustrative.`}
+function bode(){let s='<g stroke="#ddd">',c='',k='';for(let d=0;d<=30;d+=10)s+=`<line x1="40" y1="${200-d/30*170}" x2="590" y2="${200-d/30*170}"/>`;s+='</g>';
+const pc=30.6e6,pk=113.7e6;for(let i=0;i<=200;i++){const f=Math.pow(10,6+i/200*3),x=40+i*2.75,y=p=>200-(26-10*Math.log10(1+(f/p)**2))/30*170;c+=`${x},${y(pc)} `;k+=`${x},${y(pk)} `}
+for(const [l,x] of [['1 MHz',40],['10 MHz',223],['100 MHz',407],['1 GHz',590]])s+=`<text x="${x-18}" y="218" font-size="11" fill="#333">${l}</text>`;
+for(const d of [0,10,20,30])s+=`<text x="5" y="${204-d/30*170}" font-size="11" fill="#333">${d}</text>`;
+document.getElementById('w2').innerHTML=s+`<polyline fill="none" stroke="#e07a00" stroke-width="2" points="${c}"/><polyline fill="none" stroke="#2e7d32" stroke-width="2" points="${k}"/><text x="60" y="20" font-size="12" fill="#e07a00">CS (orange)</text><text x="150" y="20" font-size="12" fill="#2e7d32">Cascode (green)  | gain in dB vs f</text>`}
+plots();bode();calc();
+</script></body></html>
